@@ -1,0 +1,184 @@
+model:
+  n_input_features: 512 # number of input features in the neural data. (2 features per electrode, 256 electrodes)
+  n_units: 768 # number of units per GRU layer
+  rnn_dropout: 0.4 # dropout rate for the GRU layers
+  rnn_trainable: true # whether the GRU layers are trainable
+  bidirectional: false
+  n_layers: 5 # number of GRU layers
+  patch_size: 14 # size of the input patches (14 time steps)
+  patch_stride: 4 # stride for the input patches (4 time steps)
+
+  input_network:
+    n_input_layers: 1 # number of input layers per network (one network for each day)
+    input_layer_sizes:
+    - 512 # size of the input layer (number of input features)
+    input_trainable: true # whether the input layer is trainable
+    input_layer_dropout: 0.2 # dropout rate for the input layer
+
+gpu_number: '1' # GPU number to use for training, formatted as a string (e.g., '0', '1', etc.)
+distributed_training: false
+mode: train
+use_amp: true # whether to use automatic mixed precision (AMP) for training
+
+
+output_dir: /victoriapvc/data/brain2text_25/outputs
+checkpoint_dir: /victoriapvc/data/brain2text_25/outputs # directory to save checkpoints during training
+init_from_checkpoint: false # whether to initialize the model from a checkpoint
+init_checkpoint_path: None # path to the checkpoint to initialize the model from, if any
+save_best_checkpoint: true # whether to save the best checkpoint based on validation metrics
+save_all_val_steps: false # whether to save checkpoints at all validation steps
+save_final_model: false # whether to save the final model after training
+save_val_metrics: true # whether to save validation metrics during training
+early_stopping: false # whether to use early stopping based on validation metrics
+early_stopping_val_steps: 20 # number of validation steps to wait before stopping training if no improvement is seen
+
+num_training_batches: 12000 # number of training batches to run
+lr_scheduler_type: cosine # type of learning rate scheduler to use
+lr_max: 0.005 # maximum learning rate for the main model
+lr_min: 0.0001 # minimum learning rate for the main model
+lr_decay_steps: 120000 # number of steps for the learning rate decay
+lr_warmup_steps: 1000 # number of warmup steps for the learning rate scheduler
+lr_max_day: 0.005 # maximum learning rate for the day specific input layers
+lr_min_day: 0.0001 # minimum learning rate for the day specific input layers
+lr_decay_steps_day: 120000 # number of steps for the learning rate decay for the day specific input layers
+lr_warmup_steps_day: 1000 # number of warmup steps for the learning rate scheduler for the day specific input layers
+
+beta0: 0.9 # beta0 parameter for the Adam optimizer
+beta1: 0.999 # beta1 parameter for the Adam optimizer
+epsilon: 0.1 # epsilon parameter for the Adam optimizer
+weight_decay: 0.001 # weight decay for the main model
+weight_decay_day: 0 # weight decay for the day specific input layers
+seed: 10 # random seed for reproducibility
+grad_norm_clip_value: 10 # gradient norm clipping value
+
+batches_per_train_log: 200 # number of batches per training log
+batches_per_val_step: 2000 # number of batches per validation step
+
+batches_per_save: 0 # number of batches per save
+log_individual_day_val_PER: false # whether to log individual day validation performance
+log_val_skip_logs: false # whether to skip logging validation metrics
+save_val_logits: true # whether to save validation logits
+save_val_data: false # whether to save validation data
+
+dataset:
+  data_transforms:
+    white_noise_std: 1.0 # standard deviation of the white noise added to the data
+    constant_offset_std: 0.2 # standard deviation of the constant offset added to the data
+    random_walk_std: 0.0 # standard deviation of the random walk added to the data
+    random_walk_axis: -1 # axis along which the random walk is applied
+    static_gain_std: 0.0 # standard deviation of the static gain applied to the data
+    random_cut: 3 # number of time steps to randomly cut from the beginning of each batch of trials
+    smooth_kernel_size: 100 # size of the smoothing kernel applied to the data
+    smooth_data: true # whether to smooth the data
+    smooth_kernel_std: 2 # standard deviation of the smoothing kernel applied to the data
+
+  neural_dim: 512 # dimensionality of the neural data
+  batch_size: 64 # global batch size; with DDP we use 64/world_size per GPU (e.g. 16 per GPU for 4 GPUs) to keep effective batch 64 and avoid OOM
+  n_classes: 41 # number of classes (phonemes) in the dataset
+  max_seq_elements: 500 # maximum number of sequence elements (phonemes) for any trial
+  days_per_batch: 4 # number of randomly-selected days to include in each batch
+  seed: 1 # random seed for reproducibility
+  num_dataloader_workers: 4 # number of DataLoader workers (0 = main process only; 4-8 speeds up I/O; set 0 if fork/CUDA issues)
+  prefetch_factor: 2 # batches to prefetch per worker when num_dataloader_workers > 0
+  persistent_workers: true # keep workers alive between epochs (faster; use when num_dataloader_workers > 0)
+  num_val_dataloader_workers: 0 # validation loader workers (0 is usually enough)
+  loader_shuffle: false # whether to shuffle the data loader
+  must_include_days: null # specific days to include in the dataset
+  test_percentage: 0.1 # percentage of data to use for testing
+  feature_subset: null # specific features to include in the dataset
+  use_torch_compile: true # whether to use torch.compile for training (may cause issues with day_idx tensor indexing)
+
+  dataset_dir: /victoriapvc/data/brain2text_t15_formatted # directory containing the dataset
+  bad_trials_dict: null # dictionary of bad trials to exclude from the dataset
+  # 5-5-8 split (condition 3): first 18 sessions = 5 train + 5 val + 8 test; order must match manifest
+  sessions: # list of sessions to include in the dataset
+  - t15.2023.08.11
+  - t15.2023.08.13
+  - t15.2023.08.18
+  - t15.2023.08.20
+  - t15.2023.08.25
+  - t15.2023.08.27
+  - t15.2023.09.01
+  - t15.2023.09.03
+  - t15.2023.09.24
+  - t15.2023.09.29
+  - t15.2023.10.01
+  - t15.2023.10.06
+  - t15.2023.10.08
+  - t15.2023.10.13
+  - t15.2023.10.15
+  - t15.2023.10.20
+  - t15.2023.10.22
+  - t15.2023.11.03
+  - t15.2023.11.04
+  dataset_probability_val: # probability of including a trial in the validation set (0 or 1); length = len(sessions)
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+
+# Manifest path for formatted competition data (from format_competition_data_conditions.py)
+# Set to None or omit to use original dataset_dir loading
+manifest_path: /victoriapvc/data/brain2text_t15_formatted/5train_5val_8test/manifest_5train_5val_8test.pkl
+
+# MDAN/DANN configuration for 5-5-8 split (condition 3)
+# Source days: first 5 sessions (indices 0-4)
+source_days: [0, 1, 2, 3, 4]
+# Target days: next 5 sessions (indices 5-9)
+target_days: [5, 6, 7, 8, 9]
+mdan_two_step_backward: true  # Backward task then domain in two steps to avoid OOM with batch_size 64 (source rep detached for domain loss)
+truely_mdan: true  # If true, use separate discriminator per source domain; if false, single multi-class discriminator
+
+# Stretch/squeeze and prolonged augmentations (trial-level; used for source and optionally target)
+include_original: true  # Include unaugmented trials in training
+include_stretched_samples: true  # If true, add time-stretched variants (3x trial-level: original, stretched, reserved)
+include_prolonged_samples: false  # If true, add prolonged samples (concat of K trials, optionally stretched)
+stretch_range: [1.5, 5.0]  # Time-stretch factor: scalar or [min, max] for random factor per segment
+prolonged_combined_range: [1.5, 5.0]  # [min_K, max_K] trials to concatenate per prolonged sample
+prolonged_sample_size: null  # Number of prolonged samples to generate (null = len(base_ds))
+# Representation layer for MDAN (0-based GRU layer index):
+# -1 = before GRU (after day layer)
+#  0 = after GRU layer 1
+#  1 = after GRU layer 2
+#  ...
+# n_layers-1 = after final GRU layer (before CTC projection)
+rep_layer_idx: 2
+
+# DANN hyperparameters
+
+phase: 24 # only used when dann_alpha_type is 'alternative'
+dann_lambda: 0.7  # Weight for domain adversarial loss
+dann_hidden: 256  # Hidden dimension for domain discriminator
+domain_dropout: 0.0  # Dropout rate for domain discriminator
+linear_discriminator: false  # If true, use linear discriminator; if false, use MLP
+dann_lr_multiplier: 0.8  # Learning rate multiplier for discriminator (relative to main model lr_max)
+dann_weight_decay: 1e-5  # l2_decay in transformer, Weight decay for discriminator (null = use main model weight_decay), 
+dann_warmup_steps: 5  # Number of steps before starting domain adversarial loss (alpha=0 during warmup)
+dann_alpha_max_steps: null  # Max steps for alpha schedule (null = use num_training_batches)
+dann_alpha_type: alternative  # Alpha schedule type: 'standard' or 'alternative' (sinusoidal)
+mean_pool_for_discriminator: false  # If true, mean pool sequence before discriminator; if false, use all timesteps
+lambda_tgt: 1.0  # Weight for target domain loss (relative to source domain loss)
+dom_loss_type: mean  # How to combine domain losses: 'mean' or 'max' (for truely_mdan)
+dann_dropout_channel_prob: 0.0  # Probability of randomly masking channel-steps for discriminator (0 = disabled)
+
+# WandB configuration
+wandb_project: Vic-T15-split1  # WandB project name
+wandb_entity: victoriazhang-projects  # WandB entity/team name
+wandb_name: mdan_split1_5source_13target  # WandB run name (defaults to output_dir basename if not specified)
+wandb_id: ""  # WandB run ID for resuming (leave empty for new runs)

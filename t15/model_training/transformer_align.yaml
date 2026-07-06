@@ -1,0 +1,192 @@
+# Transformer MDAN config — ALIGN paper hyperparameters (arXiv:2603.18299).
+#
+# Architecture: same BiT_Phoneme as transformer_args.yaml (T15 paper spec).
+# MDAN hyperparameters: from ALIGN Table 1 / Appendix (transformer, T12 setup),
+# adapted to the 10-source / 5-target / 5-test split used here.
+#
+# Key ALIGN values (transformer):
+#   dann_lambda       = 0.6   (λ_DANN)
+#   phase             = 16    (ω for sinusoidal α schedule)
+#   rep_layer_idx     = 2     (0-based transformer block index)
+#   dann_hidden       = 256   (d_h for each discriminator MLP)
+#   dann_lr_multiplier= 0.6   (discriminator LR = 0.6 × model LR)
+#   dann_weight_decay = 1e-5  (discriminator weight decay)
+#   stretch_range     = [1.5, 5.0]  (TSA augmentation)
+
+model:
+  n_input_features: 512
+  # Overlapping patches: kernel = patch_size, stride = patch_stride.
+  # Set patch_stride = patch_size for the original non-overlapping behaviour.
+  # The RNN baseline uses (size=14, stride=4) → ~12 output frames/sec at 20 ms bins.
+  patch_size: 14
+  patch_stride: 4
+  dim: 384
+  depth: 5
+  heads: 6
+  dim_head: 512
+  mlp_dim_ratio: 4
+  dropout: 0.35
+  attn_dropout: 0.4
+  input_dropout: 0.2
+  T5_style_pos: true
+  gaussian_smooth_width: 2.0
+  gaussian_smooth_size: 21
+  max_mask_pct: 0.0             # T15 baseline uses 0; ALIGN T12 uses 0.075
+  num_masks: 0
+  mask_token_zeros: true
+  max_rel_dist: 200
+  use_gradient_checkpointing: true
+
+gpu_number: '0'
+distributed_training: false
+mode: train
+use_amp: true
+
+# If set, overrides trainer auto-detection based on `source_days`/`target_days`.
+# - true: run MDAN (requires non-empty source_days and target_days)
+# - false: run plain transformer on the manifest split
+use_mdan: true
+
+output_dir: /n/holylfs06/LABS/bsabatini_lab/Lab/shunnnli/speechbci/outputs/transformer_mdan
+checkpoint_dir: /n/holylfs06/LABS/bsabatini_lab/Lab/shunnnli/speechbci/outputs/transformer_mdan/checkpoints
+init_from_checkpoint: false
+init_checkpoint_path: null
+save_best_checkpoint: true
+save_all_val_steps: false
+save_final_model: false
+save_val_metrics: true
+early_stopping: false
+early_stopping_val_steps: 20
+
+num_training_batches: 120000
+lr_scheduler_type: cosine
+lr_max: 0.005
+lr_min: 0.0001
+lr_decay_steps: 120000
+lr_warmup_steps: 1000
+milestones: [30000]
+gamma: 0.1
+
+beta0: 0.9
+beta1: 0.999
+epsilon: 0.1
+weight_decay: 0.001
+seed: 10
+grad_norm_clip_value: 10
+
+batches_per_train_log: 200
+batches_per_val_step: 2000
+
+log_individual_day_val_PER: false
+log_val_skip_logs: false
+save_val_logits: true
+save_val_data: false
+
+dataset:
+  data_transforms:
+    white_noise_std: 0.2
+    constant_offset_std: 0.05
+    random_walk_std: 0.0
+    random_walk_axis: -1
+    static_gain_std: 0.0
+    random_cut: 3
+    smooth_kernel_size: 100
+    smooth_data: false
+    smooth_kernel_std: 2
+
+  neural_dim: 512
+  batch_size: 64
+  n_classes: 41
+  max_seq_elements: 500
+  days_per_batch: 4
+  seed: 10
+  num_dataloader_workers: 4
+  prefetch_factor: 2
+  persistent_workers: true
+  num_val_dataloader_workers: 0
+  loader_shuffle: false
+  must_include_days: null
+  test_percentage: 0.1
+  feature_subset: null
+  use_torch_compile: false
+
+  dataset_dir: /n/holylfs06/LABS/bsabatini_lab/Lab/shunnnli/speechbci/data/T15/hdf5_data_final
+  bad_trials_dict: null
+  sessions:
+  - t15.2023.08.11
+  - t15.2023.08.13
+  - t15.2023.08.18
+  - t15.2023.08.20
+  - t15.2023.08.25
+  - t15.2023.08.27
+  - t15.2023.09.01
+  - t15.2023.09.03
+  - t15.2023.09.24
+  - t15.2023.09.29
+  - t15.2023.10.01
+  - t15.2023.10.06
+  - t15.2023.10.08
+  - t15.2023.10.13
+  - t15.2023.10.15
+  - t15.2023.10.20
+  - t15.2023.10.22
+  - t15.2023.11.03
+  - t15.2023.11.04
+  dataset_probability_val:
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+
+manifest_path: /n/holylfs06/LABS/bsabatini_lab/Lab/shunnnli/speechbci/data/T15/ptDecoder_ctc_both/5train_13val_8test/manifest_5train_13val_8test.pkl
+
+# ---- MDAN domain split (5 source, 5 target, 8 test held out) ----
+source_days: [0, 1, 2, 3, 4]
+target_days: [5, 6, 7, 8, 9, 10, 11, 12]
+
+# ---- ALIGN MDAN hyperparameters (transformer) ----
+truely_mdan: true               # K binary heads, one per source session
+rep_layer_idx: 3                # tap transformer block 2 (0-indexed, out of 7)
+dann_lambda: 0.8                # ALIGN: λ_DANN = 0.6 for transformer
+dann_hidden: 256                # discriminator hidden dim (d_h in ALIGN)
+domain_dropout: 0.0             # dropout inside each discriminator head
+linear_discriminator: false     # 3-layer MLP (not linear), per ALIGN appendix
+dann_lr_multiplier: 0.5         # disc LR = 0.6 × model LR (ALIGN transformer)
+dann_weight_decay: 1.0e-5       # discriminator weight decay (ALIGN)
+dann_alpha_type: alternative    # sinusoidal schedule (ALIGN Eq. 3)
+phase: 24                       # ω = 16 for transformer (ALIGN Table 1)
+dann_warmup_steps: 5            # steps before domain loss is applied
+dann_alpha_max_steps: null      # null = use num_training_batches
+mean_pool_for_discriminator: false  # use all patch timesteps (not pooled)
+lambda_tgt: 0.8                 # target loss weight relative to source
+dom_loss_type: mean             # combine per-head losses via mean (or max)
+dann_dropout_channel_prob: 0.0  # optional channel-step masking (disabled)
+mdan_two_step_backward: true    # memory-efficient two-step backward
+
+# ---- Temporal Stretch Augmentation (TSA) — ALIGN Section 3.2 ----
+include_original: true
+include_stretched_samples: true     # TSA on source data
+include_prolonged_samples: false
+stretch_range: [1.5, 5.0]           # stretch factor r ~ Uniform(1.5, 5.0)
+prolonged_combined_range: [1.5, 5.0]
+prolonged_sample_size: null
+
+wandb_project: Shun-t15-transformer
+wandb_entity: victoriazhang-projects
+wandb_name: 20260611_transformer-sota
+wandb_id: ""

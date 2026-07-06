@@ -1,0 +1,73 @@
+paths:
+  base_paths:
+    obi: '/victoriapvc/data/'
+    leia: '/victoriapvc/data/'
+  server: 'obi'
+  output_subdir: 'outputs'
+  data_path_key: 'obi_log_held_out' # 'obi_log_held_out'
+  data_paths:
+    # obi_log_held_out: '/victoriapvc/data/ptDecoder_ctc_both_held_out_days'
+    obi_log_held_out: '/victoriapvc/data/ptDecoder_ctc_both_held_out_days'
+
+training:
+  seed_list: [1, 2, 3, 4]
+  model_name_base: 'baseline_GRU_held_out_redo2' # 'baseline_GRU_held_out_redo2'
+  checkpoint_dir: ''
+  wandb_id: ''
+  resume_from_epoch: 0
+
+runtime:
+  num_gpus: 4
+  master_addr: 'localhost'
+  master_port: 16672
+  session_prefix: 'training_gru'
+  auto_attach: true
+
+model:
+  nInputFeatures: 256
+  nClasses: 40
+  nUnits: 1024
+  nLayers: 5
+  dropout: 0.40
+  input_dropout: 0
+  bidirectional: true
+
+data:
+  maxDay: 14
+  restricted_days: []
+  whiteNoiseSD: 0.8
+  constantOffsetSD: 0.20
+  gaussianSmoothWidth: 2.0
+  strideLen: 4
+  kernelLen: 32
+  nDays: 24
+
+masking:
+  max_mask_pct: 0.0
+  num_masks: 0
+  linderman_lab: false
+  consistency: false
+
+optimization:
+  AdamW: false
+  SOAP: false
+  lrStart: 0.02
+  lrEnd: 0.02
+  l2_decay: 1e-5
+  beta1: 0.90
+  beta2: 0.999
+  learning_scheduler: 'None'
+  milestones: [-1]
+  gamma: 0
+  n_epochs: 73
+  batchSize: 64
+
+other:
+  ventral_6v_only: false
+  wandb_project: 'Vic-GRU_baselines'
+  wandb_entity: 'victoriazhang-projects'
+  # Optional: set to avoid exporting key manually.
+  wandb_api_key: ''
+
+# Optional passthrough for any extra neural_decoder_trainer args not listed above.
+trainer_args: {}
