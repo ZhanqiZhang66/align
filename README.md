@@ -13,12 +13,14 @@
 </p>
 
 <p align="center">
-  <img src="docs/align_architecture.png" width="90%" alt="ALIGN model architecture">
+  <img src="docs/align_overview.png" width="100%" alt="Dataset and domain shift across sessions">
 </p>
 <p align="center">
-  <em><b>ALIGN architecture.</b> A shared feature encoder <code>f</code> and phoneme classifier <code>p</code>
-  (Transformer decoder backbone) are trained jointly with a multi-head domain classifier <code>d</code>.
-  A gradient reversal layer drives the encoder to learn session-invariant features.</em>
+  <em><b>Dataset and domain shift across sessions.</b> (a) Attempted-speech intracortical recordings from a
+  participant with ALS. (b) The same sentence produces session-dependent neural dynamics across two sessions.
+  (c) Nonstationarities induce a distribution shift between source and target sessions, which adaptation makes
+  session-invariant. (d) t-SNE of the phoneme-decoding latent embeddings for source (blue) and target (red)
+  sessions before and after ALIGN.</em>
 </p>
 
 This repository contains the essential code to reproduce the results in the ALIGN
