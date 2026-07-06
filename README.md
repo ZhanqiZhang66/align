@@ -1,8 +1,25 @@
-# ALIGN: Adversarial Learning for Generalizable Speech Neuroprosthesis
+<h1 align="center">ALIGN: Adversarial Learning for Generalizable Speech Neuroprosthesis</h1>
 
-Zhanqi Zhang, Shun Li, Bernardo L. Sabatini, Mikio Aoi, Gal Mishne
+<p align="center">
+  Zhanqi Zhang · Shun Li · Bernardo L. Sabatini · Mikio Aoi · Gal Mishne
+</p>
 
-📄 Paper: [arXiv:2603.18299](https://arxiv.org/abs/2603.18299)
+<p align="center">
+  <a href="https://arxiv.org/abs/2603.18299"><img src="https://img.shields.io/badge/arXiv-2603.18299-b31b1b.svg" alt="arXiv"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <img src="https://img.shields.io/badge/Venue-UAI%202026-8a2be2.svg" alt="UAI 2026">
+  <img src="https://img.shields.io/badge/Python-3.9%2B-3776ab.svg" alt="Python 3.9+">
+  <img src="https://img.shields.io/badge/PyTorch-decoder-ee4c2c.svg" alt="PyTorch">
+</p>
+
+<p align="center">
+  <img src="docs/align_architecture.png" width="90%" alt="ALIGN model architecture">
+</p>
+<p align="center">
+  <em><b>ALIGN architecture.</b> A shared feature encoder <code>f</code> and phoneme classifier <code>p</code>
+  (Transformer decoder backbone) are trained jointly with a multi-head domain classifier <code>d</code>.
+  A gradient reversal layer drives the encoder to learn session-invariant features.</em>
+</p>
 
 This repository contains the essential code to reproduce the results in the ALIGN
 paper. It is intentionally minimal: only the training, adaptation, and evaluation
@@ -165,17 +182,23 @@ selection and is produced directly by the training runs above (no LM / TTA neede
 See `notebooks/t15_baseline_tta_wer_results.ipynb` for the T15 baseline TTA WER
 results.
 
-Reported T12 splits: 12-8-3, 15-5-3, and 12-4-7 (source-target-test sessions),
-set via the source/target session fields in the config passed with `--config`.
+Reported T12 splits (12-8-3, 15-5-3, 12-4-7) are selected by the `data_path_key`
+field inside each config (`obi_log_big_0` = 8 target/eval days = the 12-8-3
+partition used for the headline PER comparison; `obi_log_held_out` = 5). The two
+ablations (domain-discriminator design and adversarial layer placement) are
+reproduced by toggling `truely_mdan` and `rep_layer_idx` in the ALIGN config.
+**PER** is the raw validation decoder output of these training runs (no LM/TTA).
 
 ```bash
 cd t12
 
-# baselines
+# GRU baseline
 python scripts/train_gru.py         --config scripts/nrp/train_gru_cross_session_config.yaml
-python scripts/train_transformer.py --config scripts/nrp/train_transformer_cross_session_config.yaml
 
-# ALIGN (multi-domain adversarial adaptation)
+# Transformer baseline — 12-8-3 PER partition (big_0)
+python scripts/train_transformer.py --config scripts/nrp/train_transformer_cross_session_config_big0.yaml
+
+# ALIGN (multi-domain adversarial adaptation) — 12-8-3 PER partition (big_0)
 python scripts/train_align.py       --config scripts/nrp/train_transformer_cross_session_align_config.yaml
 
 # WER evaluation

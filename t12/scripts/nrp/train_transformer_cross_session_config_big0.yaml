@@ -1,0 +1,91 @@
+# Configuration file for train_transformer.py
+# Cross-session evaluation using held-out days for train/val split
+
+# Paths configuration
+paths:
+  base_paths:
+    obi: '/victoriapvc/data/'
+    leia: '/victoriapvc/data/'
+  server: 'obi'  # Change to 'leia' if needed
+  
+  # CROSS-SESSION EVALUATION: Choose one of the following data splits:
+  # 
+  # Option 1: 'obi_log_held_out' 
+  #   -> Uses ptDecoder_ctc_both_held_out_days
+  #   -> 5 evaluation days: ['07.21', '07.27', '08.02', '08.11', '08.13']
+  #   -> max_day = 14 (24 - 3 - 6 - 1)
+  #
+  # Option 2: 'obi_log_big_0'
+  #   -> Uses ptDecoder_ctc_both_held_out_days_big_0  
+  #   -> 8 evaluation days: ['06.28', '07.05', '07.14', '07.21', '07.27', '08.02', '08.11', '08.13']
+  #   -> More evaluation days for larger test set
+  #
+  # To switch between them, change the data_path_key below
+  data_path_key: 'obi_log_big_0' #TODO:'obi_log' if src only, 'obi_log_big_0' if src and tgt # Options: 'obi_log_held_out' or 'obi_log_big_0'
+
+# Training configuration
+training:
+  seed_list: [1, 2, 3, 4]  # List of seeds to train
+  model_name_base: "baseline_5ly_big0_150steps_double_check_do"
+  
+  # Resume configuration
+  checkpoint_dir: ""  # TODO: change me only if resuming from checkpoint
+  wandb_id: ""  # TODO: change me only if resuming from checkpoint
+  resume_from_epoch: 0  # TODO: change me only if resuming from checkpoint
+
+# Model architecture
+model:
+  patch_size: [5, 256]  # Will be converted to tuple
+  dim: 384
+  depth: 5
+  heads: 6
+  mlp_dim_ratio: 4
+  dim_head: 64
+  T5_style_pos: true
+  nClasses: 40
+  nClasses_2: null  # set to None if only one output head
+  dropout: 0.35
+  input_dropout: 0.2
+
+# Data preprocessing
+# Note: maxDay should be null when using held-out days datasets
+# because the dataset already contains the train/test split
+data:
+  maxDay: null  # Set to null for held-out days (dataset already has split)
+  restricted_days: [] # TODO:[0,1,2,3,4,5,6,7,8,9,10,11] if src only
+  whiteNoiseSD: 0.2
+  gaussianSmoothWidth: 2.0
+  constantOffsetSD: 0.05
+
+# Masking configuration
+masking:
+  mask_token_zero: false
+  num_masks_channels: 0  # number of masks per grid
+  max_mask_channels: 0  # maximum number of channels to mask per mask
+  max_mask_pct: 0.075
+  num_masks: 20
+  dist_dict_path: '/home3/skaasyap/willett/outputs/dist_dict.pt'
+  consistency: false
+  consistency_scalar: 0.2
+
+# Optimization
+optimization:
+  AdamW: true
+  learning_scheduler: 'multistep'
+  lrStart: 0.001
+  lrEnd: 0.001
+  l2_decay: 1e-5
+  beta1: 0.90
+  beta2: 0.999
+  batchSize: 64
+  n_epochs: 250
+  milestones: [150]
+  gamma: 0.1
+
+# Other settings
+other:
+  ventral_6v_only: false
+  extra_notes: "Cross-session evaluation with held-out days train/val split"
+  wandb_project: 'Shun-param-sweep'
+  wandb_entity: 'victoriazhang-projects'
+
