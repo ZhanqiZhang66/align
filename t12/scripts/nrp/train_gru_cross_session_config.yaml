@@ -7,7 +7,7 @@ paths:
   data_path_key: 'obi_log_held_out' # 'obi_log_held_out'
   data_paths:
     # obi_log_held_out: '/victoriapvc/data/ptDecoder_ctc_both_held_out_days'
-    obi_log_held_out: '/victoriapvc/data/ptDecoder_ctc_both_held_out_days'
+    obi_log_big_0: '/victoriapvc/data/ptDecoder_ctc_both_held_out_days_held_out'
 
 training:
   seed_list: [1, 2, 3, 4]
@@ -19,7 +19,7 @@ training:
 runtime:
   num_gpus: 4
   master_addr: 'localhost'
-  master_port: 16672
+  master_port: 16673
   session_prefix: 'training_gru'
   auto_attach: true
 

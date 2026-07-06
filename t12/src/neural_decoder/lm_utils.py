@@ -459,7 +459,7 @@ def _extract_true_sentences(inferenceOut):
 # copied from repos/transformers_with_dietcorp_cp/notebooks/encoder_embedding_across_session_big0_logits.ipynb
 from dataset import getDatasetLoaders, SpeechDataset
 from bit_dann import BiT_Phoneme
-from dann import DomainDiscriminator
+from align import DomainDiscriminator
 from edit_distance import SequenceMatcher
 import numpy as np
 import matplotlib.pyplot as plt

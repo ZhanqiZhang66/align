@@ -28,7 +28,7 @@ from dataset import (
     collate_trial_batches,
 )
 from data_augmentations import gauss_smooth
-from dann import DomainDiscriminator, grad_reverse, masked_mean_pool, randomly_mask_channelsteps
+from align import DomainDiscriminator, grad_reverse, masked_mean_pool, randomly_mask_channelsteps
 
 import torchaudio.functional as F  # for edit distance
 from omegaconf import OmegaConf

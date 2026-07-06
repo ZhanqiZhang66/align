@@ -42,7 +42,7 @@ from dataset import (
     generate_prolonged_samples,
     train_test_split_indicies,
 )
-from dann import (
+from align import (
     DomainDiscriminator,
     grad_reverse,
     masked_mean_pool,

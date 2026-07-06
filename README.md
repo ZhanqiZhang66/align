@@ -74,7 +74,7 @@ baseline decoder; a shared `dann.py` provides the gradient-reversal layer and th
 
 | Path | Purpose |
 |------|---------|
-| `model_training/dann.py` | Gradient reversal + domain discriminator (shared ALIGN core) |
+| `model_training/align.py` | Gradient reversal + domain discriminator (shared ALIGN core) |
 | `model_training/rnn_model.py`, `rnn_trainer.py`, `train_model.py` | GRU **baseline** decoder |
 | `model_training/rnn_model_align.py`, `rnn_trainer_align.py`, `train_align_rnn.py` | **ALIGN** GRU decoder |
 | `model_training/transformer_model.py`, `transformer_trainer_align.py`, `train_align_transformer.py` | **ALIGN** Transformer decoder |
@@ -91,11 +91,11 @@ baseline decoder; a shared `dann.py` provides the gradient-reversal layer and th
 
 | Path | Purpose |
 |------|---------|
-| `src/neural_decoder/dann.py` | Gradient reversal + (multi-domain) domain discriminator |
+| `src/neural_decoder/align.py` | Gradient reversal + (multi-domain) domain discriminator |
 | `src/neural_decoder/bit.py`, `neural_decoder_trainer.py` | Transformer (BiT) **baseline** decoder + trainer |
 | `src/neural_decoder/bit_align.py`, `neural_decoder_trainer_align.py` | **ALIGN** decoder + adversarial trainer |
 | `src/neural_decoder/model.py` | GRU baseline decoder |
-| `src/neural_decoder/{dataset,loss,augmentations,hi_longformer,soap,cer_wer,tta_utils,lm_utils}.py` | Data, losses, augmentation, optimizer, metrics, LM utilities |
+| `src/neural_decoder/{dataset,loss,augmentations,soap,cer_wer,tta_utils,lm_utils}.py` | Data, losses, augmentation, optimizer, metrics, LM utilities |
 | `scripts/train_gru.py`, `train_transformer.py` | Baseline training |
 | `scripts/train_align.py` | **ALIGN** training |
 | `notebooks/formatCompetitionData.ipynb` | Format the T12 dataset |
@@ -194,13 +194,13 @@ reproduced by toggling `truely_mdan` and `rep_layer_idx` in the ALIGN config.
 ```bash
 cd t12
 
-# GRU baseline
+# GRU baseline (set data_path_key: 'obi_log_big_0' in the config for the 12-8-3 partition)
 python scripts/train_gru.py         --config scripts/nrp/train_gru_cross_session_config.yaml
 
-# Transformer baseline — 12-8-3 PER partition (big_0)
+# Transformer baseline — 12-8-3 partition (big_0)
 python scripts/train_transformer.py --config scripts/nrp/train_transformer_cross_session_config_big0.yaml
 
-# ALIGN (multi-domain adversarial adaptation) — 12-8-3 PER partition (big_0)
+# ALIGN (multi-domain adversarial adaptation) — 12-8-3 partition (big_0)
 python scripts/train_align.py       --config scripts/nrp/train_transformer_cross_session_align_config.yaml
 
 # WER evaluation
@@ -231,10 +231,10 @@ contribution of this work.
 ## Citation
 
 ```bibtex
-@article{zhang2026align,
-  title   = {ALIGN: Adversarial Learning for Generalizable Speech Neuroprosthesis},
-  author  = {Zhang, Zhanqi and Li, Shun and Sabatini, Bernardo L. and Aoi, Mikio and Mishne, Gal},
-  journal = {arXiv preprint arXiv:2603.18299},
-  year    = {2026}
+@inproceedings{zhangli2026align,
+  title     = {ALIGN: Adversarial Learning for Generalizable Speech Neuroprosthesis},
+  author    = {Zhang, Zhanqi and Li, Shun and Sabatini, Bernardo L. and Aoi, Mikio and Mishne, Gal},
+  booktitle = {Uncertainty in Artificial Intelligence (UAI)},
+  year      = {2026}
 }
 ```

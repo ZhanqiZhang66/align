@@ -15,8 +15,7 @@ from torch.utils.data import ConcatDataset
 from .dataset import getDatasetLoaders, getDatasetLoadersInterleaved, SpeechDataset, StretchSqueezeDataset
 import torch.nn.functional as F
 from .loss import forward_ctc, forward_cr_ctc, future_prediction_loss, phone_contrastive_loss, ctc_run_alignment_phone_ids, cross_trial_phone_contrastive_loss, forward_ctc_ntp, weighted_forward_ctc, kl_phone_prior_loss
-from .hi_longformer import compute_hierarchical_ctc_loss
-from .dann import DomainDiscriminator, grad_reverse, masked_mean_pool, randomly_mask_channelsteps
+from .align import DomainDiscriminator, grad_reverse, masked_mean_pool, randomly_mask_channelsteps
 
 
 import wandb

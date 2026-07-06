@@ -12,7 +12,6 @@ from tqdm import tqdm
 from .dataset import getDatasetLoaders, getDatasetLoadersInterleaved
 import torch.nn.functional as F
 from .loss import forward_ctc, forward_cr_ctc, future_prediction_loss, phone_contrastive_loss, ctc_run_alignment_phone_ids, cross_trial_phone_contrastive_loss, forward_ctc_ntp
-from .hi_longformer import compute_hierarchical_ctc_loss
 from typing import Tuple, Optional
 
 
@@ -725,6 +724,9 @@ def trainModel(args, model):
                             fut_pred_for_loss = None
 
                         hier_aux_weight = args.get("hier_aux_weight", 0.3)
+                        # Hierarchical (broad-class) CTC is an optional decoder not shipped
+                        # in this minimal release; only reachable with a hierarchical model.
+                        from .hi_longformer import compute_hierarchical_ctc_loss
                         loss, loss_phone, loss_broad = compute_hierarchical_ctc_loss(
                             logits_phone,
                             logits_broad,
@@ -1063,6 +1065,8 @@ def trainModel(args, model):
                                 X, X_len, testDayIdx
                             )
                             hier_aux_weight = args.get("hier_aux_weight", 0.3)
+                            # Optional hierarchical decoder (not shipped in this minimal release).
+                            from .hi_longformer import compute_hierarchical_ctc_loss
                             loss, _, _ = compute_hierarchical_ctc_loss(
                                 logits_phone,
                                 logits_broad,
